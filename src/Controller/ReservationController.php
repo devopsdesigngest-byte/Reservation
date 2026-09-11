@@ -42,32 +42,19 @@ class ReservationController
     public function create(): void
     {
         $salles = $this->reservationService->listerSalles();
-        echo Render::render('reservation/form', [
-            'salles' => $salles,
-            'errors' => [],
-            'old' => []
-        ]);
+        echo Render::render('reservation/form', ['salles' => $salles, 'errors' => [], 'old' => []]);
     }
 
     public function store(): void
     {
         $data = $_POST;
-
         $resultat = (new ReservationValidator())->validate($data);
-
         if (!$resultat->isValid()) {
-            echo Render::render('reservation/form', [
-                'salles' => $this->reservationService->listerSalles(),
-                'errors' => $resultat->errors(),
-                'old' => $data
-            ]);
+            echo Render::render('reservation/form', ['salles' => $this->reservationService->listerSalles(), 'errors' => $resultat->errors(), 'old' => $data]);
             return;
         }
-
         $dto = CreerReservationDTOBuilder::fromArrayBuilder($data);
-
         $reservation = $this->creerReservationService->executer($dto);
-
         header('Location: /reservations/' . $reservation->id);
         exit;
     }

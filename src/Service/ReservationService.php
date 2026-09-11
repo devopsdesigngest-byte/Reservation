@@ -26,6 +26,6 @@ class ReservationService
 
     public function listerSalles(): Collection
     {
-        return $this->salleRepository->lister();
+        return $this->salleRepository->toutes();
     }
 }

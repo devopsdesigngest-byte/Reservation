@@ -3,17 +3,19 @@
 namespace App\Repository;
 
 use App\Model\Salle;
-// use Illuminate\Support\Collection;
+use Illuminate\Support\Collection;
+
 
 class EloquentSalleRepository implements SalleRepositoryInterface
 {
-    // public function lister(): Collection
-    // {
-    //     return Salle::query()->get();
-    // }
     public function lister(int $page = 1, int $parPage = 5)
     {
         return Salle::query()->paginate($parPage, ['*'], 'page', $page);
+    }
+
+    public function toutes(): Collection
+    {
+        return Salle::query()->get();
     }
 
     public function trouver(int $id): ?Salle
