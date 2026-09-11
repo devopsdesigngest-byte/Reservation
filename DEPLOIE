@@ -2,6 +2,111 @@ Enleve le static de Render var environnement bascule json et html
 
 
 
+Étape 11 — Configurer PHP-DI
+Travail demandé
+Créez config/container.php.
+Le conteneur doit connaître au minimum :
+● Capsule\Manager
+● SalleRepositoryInterface
+● ReservationRepositoryInterface
+● SalleValidator
+● ReservationValidator
+● CreerReservationService
+● AnnulerReservationService
+● SalleController
+● ReservationController
+● FastRoute\Dispatcher
+● Application
+Utilisez :
+● l’autowiring pour les classes concrètes simples ;
+● des définitions explicites pour les interfaces ;
+● des factories pour les objets nécessitant une configuration.
+Exemple attendu :
+use function DI\autowire;
+use function DI\factory;
+use function DI\get;
+return [
+SalleRepositoryInterface::class =>
+autowire(EloquentSalleRepository::class),
+ReservationRepositoryInterface::class =>
+autowire(EloquentReservationRepository::class),
+Capsule\Manager::class =>
+factory(function (): Capsule\Manager {
+// Configuration de la connexion
+}),
+];
+Le fichier public/index.php doit devenir proche de :
+<?php
+declare(strict_types=1);
+use App\Application;
+use DI\ContainerBuilder;
+require dirname(__DIR__) . '/vendor/autoload.php';
+$builder = new ContainerBuilder();
+$builder->addDefinitions(
+dirname(__DIR__) . '/config/container.php'
+);
+$container = $builder->build();
+$application = $container->get(Application::class);
+$application->run();
+Interdiction
+Les classes ne doivent pas recevoir ContainerInterface simplement pour rechercher
+leurs propres dépendances.
+Code à éviter :
+final class CreerReservationService
+{
+public function __construct(
+private ContainerInterface $container
+) {
+}
+}
+Code attendu :
+final class CreerReservationService{
+public function __construct(
+private SalleRepositoryInterface $salles,
+private ReservationRepositoryInterface $reservations
+) {
+}
+}
+Questions
+1. Quelle différence existe entre injection et conteneur ?
+2. Qu’est-ce que l’autowiring ?
+3. Pourquoi les interfaces nécessitent-elles une définition ?
+4. Pourquoi limiter $container->get() au point d’entrée ?
+5. Quel anti-pattern apparaît si toutes les classes interrogent le conteneur ?
+Versionnement
+Branche : feature/11-container
+Tag : v0.11.0
+Étape 12 — Ajouter les tests
+Tests unitaires obligatoires
+Testez le service de création dans les situations suivantes :
+1. réservation valide ;
+2. salle inexistante ;
+3. salle inactive ;
+4. date de fin antérieure au début ;
+5. durée supérieure à quatre heures ;
+6. date passée ;
+7. conflit avec une réservation ;
+8. réservation voisine sans chevauchement.
+Tests de validation obligatoires
+Testez :
+● une adresse électronique invalide ;
+● un responsable vide ;
+● une capacité négative ;
+● un type de salle inconnu ;
+● une date incorrecte.
+Tests d’intégration minimaux
+Testez :
+● la création d’une salle avec Eloquent ;
+● la relation salle/réservations ;
+● la recherche de chevauchement ;
+● l’annulation d’une réservation.
+Contrainte
+Les tests unitaires des services ne doivent pas nécessiter MySQL. Utilisez des doublures ou
+des implémentations en mémoire des repositories.
+Versionnement
+Branche : feature/12-tests
+Tag : v0.12.0
+
 
 Les étudiants peuvent ajouter :
 ● authentification des responsables ;
