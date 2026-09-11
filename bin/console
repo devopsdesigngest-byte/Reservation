@@ -1,0 +1,35 @@
+#!/usr/bin/env php
+<?php
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/config/database.php';
+
+require dirname(__DIR__) . '/database/migrations/2026_09_06_100000_create_salle_table.php';
+require dirname(__DIR__) . '/database/migrations/2026_09_06_110000_create_reservation_table.php';
+
+$command = $argv[1] ?? null;
+
+switch ($command) {
+    case 'ndiassembow:migrate':
+        (new CreateSalleTable())->up();
+        echo "Table 'salle' migrée.\n";
+
+        (new CreateReservationTable())->up();
+        echo "Table 'reservation' migrée.\n";
+
+        require dirname(__DIR__) . '/database/seed.php';
+        break;
+
+    case 'ndiassembow:migrate:down':
+        (new CreateReservationTable())->down();
+        echo "Table 'reservation' supprimée.\n";
+
+        (new CreateSalleTable())->down();
+        echo "Table 'salle' supprimée.\n";
+        break;
+
+    default:
+        echo "Commande inconnue. Utilisez : ndiassembow:migrate\n";
+        exit(1);
+}
+// nano ~/.bashrc
