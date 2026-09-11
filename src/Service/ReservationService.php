@@ -24,8 +24,8 @@ class ReservationService
         return $this->reservationRepository->trouver($id);
     }
 
-    // public function listerSalles(): Collection
-    // {
-    //     return $this->salleRepository->lister();
-    // }
+    public function listerSalles(): Collection
+    {
+        return $this->salleRepository->lister();
+    }
 }
