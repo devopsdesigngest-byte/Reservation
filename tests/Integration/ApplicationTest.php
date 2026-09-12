@@ -1,78 +1,63 @@
 <?php
-// Scénario 7 — URL inconnue
-// GET /inconnue
-// Résultat attendu :
-// 404 — Page introuvable
 
+namespace Tests\Integration;
 
-// Scénario 8 — Méthode non autorisée
-// DELETE /salles
-// Résultat attendu :
-// 405 — Méthode non autorisée
-// La réponse doit contenir un en-tête Allow.
+use App\Application;
+use App\Core\SessionManager;
+use App\Http\Request;
+use App\Middleware\Middleware;
+use App\Service\ReservationServiceInterface;
+use App\View\RenderInterface;
+use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
+class ApplicationTest extends TestCase
+{
+    private function creerApplication(RenderInterface $render): Application
+    {
+        $dispatcher = \FastRoute\simpleDispatcher(
+            require dirname(__DIR__, 2) . '/routes/web.php'
+        );
 
-// namespace Tests\Integration;
+        $middleware = new Middleware(
+            $this->createMock(SessionManager::class),
+            new Request(),
+            $render,
+            $this->createMock(ReservationServiceInterface::class)
+        );
 
-// use App\Application;
-// use FastRoute\Dispatcher;
-// use PHPUnit\Framework\TestCase;
-// use Psr\Container\ContainerInterface;
+        return new Application(
+            $this->createMock(ContainerInterface::class),
+            $dispatcher,
+            $middleware,
+            $render,
+            new Request()
+        );
+    }
 
-// class ApplicationTest extends TestCase
-// {
-//     private function creerApplication(): Application
-//     {
-//         $dispatcher = \FastRoute\simpleDispatcher(
-//             require dirname(__DIR__, 2) . '/routes/web.php'
-//         );
+    public function testUrlInconnue(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/inconnue';
 
-//         $container = $this->createMock(
-//             ContainerInterface::class
-//         );
+        $render = $this->createMock(RenderInterface::class);
+        $render->expects($this->once())
+            ->method('render')
+            ->with('error/404', [], 404);
 
-//         return new Application($container, $dispatcher);
-//     }
+        $this->creerApplication($render)->run();
+    }
 
-//     public function testUrlInconnue(): void
-//     {
-//         $_SERVER['REQUEST_METHOD'] = 'GET';
-//         $_SERVER['REQUEST_URI'] = '/inconnue';
+    public function testMethodeNonAutorisee(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'DELETE';
+        $_SERVER['REQUEST_URI'] = '/salles';
 
-//         $application = $this->creerApplication();
+        $render = $this->createMock(RenderInterface::class);
+        $render->expects($this->once())
+            ->method('render')
+            ->with('error/405', $this->callback(fn (array $data): bool => isset($data['allowed'])), 405);
 
-//         ob_start();
-
-//         $application->run();
-
-//         $contenu = ob_get_clean();
-
-//         $this->assertEquals(404, http_response_code());
-//         $this->assertStringContainsString('404', $contenu);
-//         $this->assertStringContainsString(
-//             'Page introuvable',
-//             $contenu
-//         );
-//     }
-
-//     public function testMethodeNonAutorisee(): void
-//     {
-//         $_SERVER['REQUEST_METHOD'] = 'DELETE';
-//         $_SERVER['REQUEST_URI'] = '/salles';
-
-//         $application = $this->creerApplication();
-
-//         ob_start();
-
-//         $application->run();
-
-//         $contenu = ob_get_clean();
-
-//         $this->assertEquals(405, http_response_code());
-//         $this->assertStringContainsString('405', $contenu);
-//         $this->assertStringContainsString(
-//             'Méthode non autorisée',
-//             $contenu
-//         );
-//     }
-// }
+        $this->creerApplication($render)->run();
+    }
+}

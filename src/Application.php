@@ -2,60 +2,49 @@
 
 namespace App;
 
-use App\View\Render;
+use App\Http\Request;
+use App\Middleware\Middleware;
+use App\View\RenderInterface;
 use FastRoute\Dispatcher;
 use Psr\Container\ContainerInterface;
-use App\Middleware\ExceptionMiddleware;
 
 final class Application
 {
     public function __construct(
         private ContainerInterface $container,
-        private Dispatcher $dispatcher
+        private Dispatcher $dispatcher,
+        private Middleware $middleware,
+        private RenderInterface $render,
+        private Request $request
     ) {
     }
 
     public function run(): void
     {
-        $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $uri = $_SERVER['REQUEST_URI'];
+        $routeInfo = $this->dispatcher->dispatch($this->request->method(), $this->request->path());
 
-        if (false !== $pos = strpos($uri, '?'))
-            $uri = substr($uri, 0, $pos);
-            $uri = rawurldecode($uri);
+        match ($routeInfo[0]) {
+            Dispatcher::NOT_FOUND => $this->render->render('error/404', [], 404),
+            Dispatcher::METHOD_NOT_ALLOWED => $this->methodNotAllowed($routeInfo[1]),
+            Dispatcher::FOUND => $this->dispatchFound($routeInfo[1], $routeInfo[2]),
+        };
+    }
 
-        $routeInfo = $this->dispatcher->dispatch($httpMethod, $uri);
+    private function methodNotAllowed(array $allowedMethods): void
+    {
+        header('Allow: ' . implode(', ', $allowedMethods));
+        $this->render->render('error/405', ['allowed' => $allowedMethods], 405);
+    }
 
-        switch ($routeInfo[0]) {
-            case Dispatcher::NOT_FOUND:
-                http_response_code(404);
-                echo Render::render('error/404');
-                break;
+    private function dispatchFound(array $handler, array $vars): void
+    {
+        [$controllerClass, $method] = $handler;
+        $controller = $this->container->get($controllerClass);
 
-            case Dispatcher::METHOD_NOT_ALLOWED:
-                $allowedMethods = $routeInfo[1];
-                http_response_code(405);
-                header('Allow: ' . implode(', ', $allowedMethods));
-                echo Render::render('error/405', ['allowed' => $allowedMethods]);
-                break;
-
-            // case Dispatcher::FOUND:
-            //     [$controllerClass, $method] = $routeInfo[1];
-            //     $vars = $routeInfo[2];
-            //     $controller = $this->container->get($controllerClass);
-            //     if (!empty($vars)) $controller->$method(...array_values($vars));
-            //     else $controller->$method();
-            // break;
-            case Dispatcher::FOUND:
-                [$controllerClass, $method] = $routeInfo[1];
-                $vars = $routeInfo[2];
-                $controller = $this->container->get($controllerClass);
-                $next = function () use ($controller, $method, $vars): void {
-                    if (!empty($vars)) $controller->$method(...array_values($vars));
-                    else $controller->$method();
-                };
-                $this->container->get(ExceptionMiddleware::class)->handle($next);
-                break;
-        }
+        $this->middleware->handle(function () use ($controller, $method, $vars): void {
+            empty($vars)
+                ? $controller->$method()
+                : $controller->$method(...array_values($vars));
+        });
     }
 }

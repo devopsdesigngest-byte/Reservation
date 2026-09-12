@@ -6,6 +6,7 @@ require dirname(__DIR__) . '/config/database.php';
 
 require dirname(__DIR__) . '/database/migrations/2026_09_06_100000_create_salle_table.php';
 require dirname(__DIR__) . '/database/migrations/2026_09_06_110000_create_reservation_table.php';
+require dirname(__DIR__) . '/database/migrations/2026_09_06_120000_create_responsable_table.php';
 
 $command = $argv[1] ?? null;
 
@@ -17,10 +18,16 @@ switch ($command) {
         (new CreateReservationTable())->up();
         echo "Table 'reservation' migrée.\n";
 
+        (new CreateResponsableTable())->up();
+        echo "Table 'responsable' migrée.\n";
+
         require dirname(__DIR__) . '/database/seed.php';
         break;
 
     case 'ndiassembow:migrate:down':
+        (new CreateResponsableTable())->down();
+        echo "Table 'responsable' supprimée.\n";
+
         (new CreateReservationTable())->down();
         echo "Table 'reservation' supprimée.\n";
 
@@ -32,4 +39,3 @@ switch ($command) {
         echo "Commande inconnue. Utilisez : ndiassembow:migrate\n";
         exit(1);
 }
-// nano ~/.bashrc

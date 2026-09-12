@@ -1,6 +1,7 @@
 <?php
 
 use App\Model\Salle;
+use App\Model\Responsable;
 
 $salles = [
     ['nom' => 'Amphithéâtre A', 'batiment' => 'Bâtiment A', 'capacite' => 250, 'type' => 'amphitheatre', 'active' => true],
@@ -9,11 +10,26 @@ $salles = [
     ['nom' => 'Salle Informatique 1', 'batiment' => 'Bâtiment B', 'capacite' => 30, 'type' => 'informatique', 'active' => true],
     ['nom' => 'Salle de réunion', 'batiment' => 'Bâtiment A', 'capacite' => 12, 'type' => 'reunion', 'active' => true],
 ];
+
 $creation = 0;
 $existantes = 0;
 foreach ($salles as $donnees) {
     $salle = Salle::firstOrCreate(['nom' => $donnees['nom']], $donnees);
-    if ($salle->wasRecentlyCreated) $creation++;
-    else $existantes++;
+    if ($salle->wasRecentlyCreated) {
+        $creation++;
+    } else {
+        $existantes++;
+    }
 }
-echo "Seed terminé : $creation créée(s), $existantes déjà existante(s).\n";
+echo "Seed salles : $creation créée(s), $existantes déjà existante(s).\n";
+
+$responsable = Responsable::firstOrCreate(
+    ['email' => 'responsable@reservation.local'],
+    [
+        'nom' => 'Responsable Demo',
+        'password' => password_hash('password', PASSWORD_DEFAULT),
+    ]
+);
+echo $responsable->wasRecentlyCreated
+    ? "Responsable créé : responsable@reservation.local / password\n"
+    : "Responsable déjà existant.\n";

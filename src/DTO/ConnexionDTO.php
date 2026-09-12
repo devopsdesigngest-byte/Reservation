@@ -17,12 +17,21 @@ readonly class ConnexionDTO
     public static function depuisEnv(): self
     {
         return new self(
-            $_ENV['DB_DRIVER'],
-            $_ENV['DB_HOST'],
-            $_ENV['DB_PORT'],
-            $_ENV['DB_DATABASE'],
-            $_ENV['DB_USERNAME'],
-            $_ENV['DB_PASSWORD']
+            self::env('DB_DRIVER', 'mysql'),
+            self::env('DB_HOST', '127.0.0.1'),
+            self::env('DB_PORT', '3306'),
+            self::env('DB_DATABASE') ?? self::env('MYSQL_DATABASE'),
+            self::env('DB_USERNAME') ?? self::env('MYSQL_USER'),
+            self::env('DB_PASSWORD') ?? self::env('MYSQL_PASSWORD')
         );
+    }
+
+    private static function env(string $key, ?string $default = null): ?string
+    {
+        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
+        if ($value === false || $value === null || $value === '') {
+            return $default;
+        }
+        return (string) $value;
     }
 }

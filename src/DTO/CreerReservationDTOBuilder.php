@@ -2,14 +2,18 @@
 
 namespace App\DTO;
 
-use App\Validation\ReservationValidator;
+use App\Validation\ReservationValidatorInterface;
 use App\Exception\ValidationException;
 
-class CreerReservationDTOBuilder
+final class CreerReservationDTOBuilder
 {
-    public static function fromArrayBuilder(array $data): CreerReservationDTO
+    public function __construct(private ReservationValidatorInterface $validator)
     {
-        $resultat = (new ReservationValidator())->validate([
+    }
+
+    public function fromArray(array $data): CreerReservationDTO
+    {
+        $resultat = $this->validator->validate([
             'salle_id' => (int) ($data['salle_id'] ?? 0),
             'responsable' => $data['responsable'] ?? '',
             'email' => $data['email'] ?? '',
@@ -18,10 +22,19 @@ class CreerReservationDTOBuilder
             'date_fin' => $data['date_fin'] ?? '',
         ]);
 
-        if (!$resultat->isValid()) throw new ValidationException($resultat->errors());
+        if (!$resultat->isValid()) {
+            throw new ValidationException($resultat->errors());
+        }
 
         $valide = $resultat->data();
 
-        return CreerReservationDTO::create($valide['salle_id'], $valide['responsable'], $valide['email'], $valide['motif'],  new \DateTimeImmutable($valide['date_debut']), new \DateTimeImmutable($valide['date_fin']));
+        return CreerReservationDTO::create(
+            (int) $valide['salle_id'],
+            $valide['responsable'],
+            $valide['email'],
+            $valide['motif'],
+            new \DateTimeImmutable($valide['date_debut']),
+            new \DateTimeImmutable($valide['date_fin'])
+        );
     }
 }

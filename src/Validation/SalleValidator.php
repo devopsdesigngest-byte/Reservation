@@ -5,7 +5,7 @@ namespace App\Validation;
 use Respect\Validation\Validator;
 use Respect\Validation\Exceptions\NestedValidationException;
 
-class SalleValidator implements ValidatorInterface
+class SalleValidator implements SalleValidatorInterface
 {
     private const TYPES_AUTORISES = ['cours', 'informatique', 'laboratoire', 'amphitheatre', 'reunion'];
 

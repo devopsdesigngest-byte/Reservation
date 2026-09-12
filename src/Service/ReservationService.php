@@ -2,21 +2,24 @@
 
 namespace App\Service;
 
+use App\DTO\FiltresReservation;
+use App\Model\Reservation;
 use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
-use App\Model\Reservation;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
-class ReservationService
+final class ReservationService implements ReservationServiceInterface
 {
     public function __construct(
         private ReservationRepositoryInterface $reservationRepository,
         private SalleRepositoryInterface $salleRepository
-    ) {}
+    ) {
+    }
 
-    public function lister(): Collection
+    public function lister(FiltresReservation $filtres, int $page = 1): LengthAwarePaginator
     {
-        return $this->reservationRepository->lister();
+        return $this->reservationRepository->lister($filtres, $page);
     }
 
     public function trouver(int $id): ?Reservation

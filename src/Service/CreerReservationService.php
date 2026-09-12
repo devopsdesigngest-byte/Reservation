@@ -6,25 +6,28 @@ use App\DTO\CreerReservationDTO;
 use App\Model\Reservation;
 use App\Repository\ReservationRepositoryInterface;
 
-class CreerReservationService
+final class CreerReservationService implements CreerReservationServiceInterface
 {
     public function __construct(
         private ReservationRepositoryInterface $reservationRepository,
         private ReservationRules $reservationRules
-    ) {}
+    ) {
+    }
 
     public function executer(CreerReservationDTO $dto): Reservation
     {
         $this->reservationRules->verifier($dto);
 
         $reservation = new Reservation();
-        $reservation->salle_id = $dto->salleId;
-        $reservation->responsable = $dto->responsable;
-        $reservation->email = $dto->email;
-        $reservation->motif = $dto->motif;
-        $reservation->date_debut = $dto->dateDebut;
-        $reservation->date_fin = $dto->dateFin;
-        $reservation->statut = 'confirmée';
+        $reservation->forceFill([
+            'salle_id' => $dto->salleId,
+            'responsable' => $dto->responsable,
+            'email' => $dto->email,
+            'motif' => $dto->motif,
+            'date_debut' => $dto->dateDebut->format('Y-m-d H:i:s'),
+            'date_fin' => $dto->dateFin->format('Y-m-d H:i:s'),
+            'statut' => 'confirmée',
+        ]);
 
         return $this->reservationRepository->enregistrer($reservation);
     }

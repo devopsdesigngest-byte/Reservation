@@ -1,8 +1,13 @@
 <?php
+
 use App\DTO\ConnexionDTO;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
+$envPath = dirname(__DIR__);
+if (is_readable($envPath . '/.env')) {
+    Dotenv\Dotenv::createImmutable($envPath)->safeLoad();
+}
+
 $env = ConnexionDTO::depuisEnv();
 
 $confifDB = [
@@ -11,9 +16,9 @@ $confifDB = [
     'port' => $env->port,
     'database' => $env->database,
     'username' => $env->username,
-    'password' => $env->password
+    'password' => $env->password,
 ];
-$capsule = new Capsule;
+$capsule = new Capsule();
 $capsule->addConnection($confifDB);
 $capsule->setAsGlobal();
 $capsule->bootEloquent();

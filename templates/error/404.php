@@ -1,3 +1,4 @@
-<h1>404 — Page introuvable</h1>
-<p>La ressource demandée n'existe pas.</p>
-<a href="/salles">Retour à l'accueil</a>
+<section class="box">
+    <h1>404 — Page introuvable</h1>
+    <p><a href="/salles">Retour</a></p>
+</section>
