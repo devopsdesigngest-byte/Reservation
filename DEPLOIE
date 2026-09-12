@@ -1,50 +1,15 @@
 Enleve le static de Render var environnement bascule json et html
 
-
-Étape 12 — Ajouter les tests
-Tests unitaires obligatoires
-Testez le service de création dans les situations suivantes :
-1. réservation valide ;
-2. salle inexistante ;
-3. salle inactive ;
-4. date de fin antérieure au début ;
-5. durée supérieure à quatre heures ;
-6. date passée ;
-7. conflit avec une réservation ;
-8. réservation voisine sans chevauchement.
-Tests de validation obligatoires
-Testez :
-● une adresse électronique invalide ;
-● un responsable vide ;
-● une capacité négative ;
-● un type de salle inconnu ;
-● une date incorrecte.
-Tests d’intégration minimaux
-Testez :
-● la création d’une salle avec Eloquent ;
-● la relation salle/réservations ;
-● la recherche de chevauchement ;
-● l’annulation d’une réservation.
-Contrainte
-Les tests unitaires des services ne doivent pas nécessiter MySQL. Utilisez des doublures ou
-des implémentations en mémoire des repositories.
-Versionnement
-Branche : feature/12-tests
-Tag : v0.12.0
-
-
-Les étudiants peuvent ajouter :
-● authentification des responsables ;
-● rôle administrateur ;
-● pagination ;
-● recherche multicritère ;
-● tableau de bord des salles les plus utilisées ;
-● prévention CSRF ;
-● middleware ;
-● journalisation ;
-● API JSON ;
-● tests HTTP ;
-● transactions lors des réservations ;
-● protection contre deux réservations simultanées ;
-● Docker ;
-● intégration continue.
+authentification des responsables ;
+rôle administrateur ;
+pagination ;
+recherche multicritère ;
+tableau de bord des salles les plus utilisées ;
+prévention CSRF ;
+middleware ;
+journalisation ;
+API JSON ;
+tests HTTP ;
+transactions lors des réservations ;
+protection contre deux réservations simultanées ;
+Docker ;●​ intégration continue.

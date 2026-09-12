@@ -51,11 +51,8 @@ final class Application
                 $vars = $routeInfo[2];
                 $controller = $this->container->get($controllerClass);
                 $next = function () use ($controller, $method, $vars): void {
-                    if (!empty($vars)) {
-                        $controller->$method(...array_values($vars));
-                    } else {
-                        $controller->$method();
-                    }
+                    if (!empty($vars)) $controller->$method(...array_values($vars));
+                    else $controller->$method();
                 };
                 $this->container->get(ExceptionMiddleware::class)->handle($next);
                 break;
